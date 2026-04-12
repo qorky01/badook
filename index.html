@@ -9,252 +9,128 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Noto+Sans+KR:wght@300;400&display=swap');
 
 :root {
-–wood: #c8a96e;
-–wood-dark: #a0824a;
-–wood-light: #e2c98a;
-–line: #5a3e1b;
-–black-stone: #1a1a1a;
-–white-stone: #f5f0e8;
-–shadow: rgba(60, 30, 0, 0.25);
-–bg: #2c1e0f;
-–panel: #1a110a;
-–accent: #d4a843;
-–text: #e8dcc8;
-–text-dim: #9a8060;
-–star: #4a2e0a;
+–wood: #c8a96e; –wood-dark: #a0824a; –wood-light: #e2c98a;
+–bg: #2c1e0f; –panel: #1a110a; –accent: #d4a843; –accent2: #7ec8c8;
+–text: #e8dcc8; –text-dim: #9a8060;
 }
 
 - { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+  background: var(–bg); font-family: ‘Noto Sans KR’, sans-serif; color: var(–text);
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px;
+  background-image: radial-gradient(ellipse at 20% 20%, rgba(180,120,40,0.08) 0%, transparent 60%),
+  radial-gradient(ellipse at 80% 80%, rgba(80,40,10,0.15) 0%, transparent 60%);
+  }
+  header { text-align: center; margin-bottom: 16px; }
+  header h1 {
+  font-family: ‘Noto Serif KR’, serif; font-size: 2.2rem; font-weight: 700;
+  letter-spacing: 0.15em; color: var(–accent); text-shadow: 0 2px 12px rgba(212,168,67,0.3);
+  }
+  header p { font-size: 0.75rem; color: var(–text-dim); letter-spacing: 0.2em; margin-top: 4px; }
 
-body {
-background: var(–bg);
-font-family: ‘Noto Sans KR’, sans-serif;
-color: var(–text);
-min-height: 100vh;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: flex-start;
-padding: 20px;
-background-image:
-radial-gradient(ellipse at 20% 20%, rgba(180,120,40,0.08) 0%, transparent 60%),
-radial-gradient(ellipse at 80% 80%, rgba(80,40,10,0.15) 0%, transparent 60%);
+.mode-bar {
+display: flex; gap: 8px; margin-bottom: 16px;
+background: var(–panel); border: 1px solid rgba(212,168,67,0.15);
+border-radius: 8px; padding: 6px;
 }
-
-header {
-text-align: center;
-margin-bottom: 20px;
+.mode-btn {
+flex: 1; padding: 8px 16px; border: 1px solid transparent; border-radius: 5px;
+background: transparent; color: var(–text-dim); font-family: ‘Noto Sans KR’, sans-serif;
+font-size: 0.82rem; cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
+.mode-btn.active { background: rgba(212,168,67,0.15); border-color: var(–accent); color: var(–accent); }
+.mode-btn:hover:not(.active) { color: var(–text); }
 
-header h1 {
-font-family: ‘Noto Serif KR’, serif;
-font-size: 2.2rem;
-font-weight: 700;
-letter-spacing: 0.15em;
-color: var(–accent);
-text-shadow: 0 2px 12px rgba(212,168,67,0.3);
-}
+.game-layout { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
 
-header p {
-font-size: 0.8rem;
-color: var(–text-dim);
-letter-spacing: 0.2em;
-text-transform: uppercase;
-margin-top: 4px;
-}
-
-.game-layout {
-display: flex;
-gap: 24px;
-align-items: flex-start;
-flex-wrap: wrap;
-justify-content: center;
-}
-
-/* ── Board ─────────────────────────────────── */
 .board-wrap {
-position: relative;
-padding: 28px;
-background:
-linear-gradient(135deg, var(–wood-light) 0%, var(–wood) 40%, var(–wood-dark) 100%);
+position: relative; padding: 28px;
+background: linear-gradient(135deg, var(–wood-light) 0%, var(–wood) 40%, var(–wood-dark) 100%);
 border-radius: 4px;
-box-shadow:
-0 0 0 3px var(–wood-dark),
-0 12px 48px rgba(0,0,0,0.6),
-inset 0 1px 0 rgba(255,255,255,0.15);
+box-shadow: 0 0 0 3px var(–wood-dark), 0 12px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15);
 }
-
 .board-wrap::before {
-content: ‘’;
-position: absolute;
-inset: 6px;
-border: 1px solid rgba(100,60,10,0.4);
-border-radius: 2px;
-pointer-events: none;
+content: ‘’; position: absolute; inset: 6px;
+border: 1px solid rgba(100,60,10,0.4); border-radius: 2px; pointer-events: none;
 }
+canvas#board { display: block; cursor: crosshair; border-radius: 2px; }
+canvas#board.ai-thinking { cursor: wait; }
 
-canvas#board {
-display: block;
-cursor: crosshair;
-border-radius: 2px;
-}
-
-/* ── Side Panel ─────────────────────────────── */
-.panel {
-width: 220px;
-display: flex;
-flex-direction: column;
-gap: 16px;
-}
-
-.card {
-background: var(–panel);
-border: 1px solid rgba(212,168,67,0.15);
-border-radius: 6px;
-padding: 16px;
-}
-
+.panel { width: 220px; display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(–panel); border: 1px solid rgba(212,168,67,0.15); border-radius: 6px; padding: 14px; }
 .card h3 {
-font-family: ‘Noto Serif KR’, serif;
-font-size: 0.75rem;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–accent);
-margin-bottom: 12px;
-border-bottom: 1px solid rgba(212,168,67,0.15);
-padding-bottom: 8px;
+font-family: ‘Noto Serif KR’, serif; font-size: 0.72rem; letter-spacing: 0.2em;
+text-transform: uppercase; color: var(–accent); margin-bottom: 10px;
+border-bottom: 1px solid rgba(212,168,67,0.15); padding-bottom: 7px;
 }
 
-/* Turn indicator */
-.turn-display {
-display: flex;
-align-items: center;
-gap: 12px;
-}
-
+.turn-display { display: flex; align-items: center; gap: 12px; }
 .stone-icon {
-width: 36px;
-height: 36px;
-border-radius: 50%;
-flex-shrink: 0;
-box-shadow: 2px 3px 8px rgba(0,0,0,0.5);
-transition: transform 0.3s ease;
+width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+box-shadow: 2px 3px 8px rgba(0,0,0,0.5); transition: transform 0.3s ease;
 }
 .stone-icon.black { background: radial-gradient(circle at 35% 35%, #555, #111); }
-.stone-icon.white {
-background: radial-gradient(circle at 35% 35%, #fff, #ccc);
-box-shadow: 2px 3px 8px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.1);
-}
+.stone-icon.white { background: radial-gradient(circle at 35% 35%, #fff, #ccc); box-shadow: 2px 3px 8px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.1); }
 .stone-icon.active { transform: scale(1.15); }
+.turn-info strong { display: block; font-size: 1rem; font-weight: 400; }
+.turn-info span { font-size: 0.72rem; color: var(–text-dim); }
 
-.turn-info strong {
-display: block;
-font-size: 1rem;
-font-weight: 400;
+.ai-badge {
+display: inline-block; font-size: 0.6rem; letter-spacing: 0.1em;
+background: rgba(126,200,200,0.15); color: var(–accent2);
+border: 1px solid rgba(126,200,200,0.3); border-radius: 3px; padding: 1px 5px; margin-left: 4px;
 }
-.turn-info span {
-font-size: 0.75rem;
-color: var(–text-dim);
-}
+.thinking-dots span { display: inline-block; animation: blink 1.2s infinite; color: var(–accent2); font-size: 1rem; }
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
 
-/* Scores */
-.score-row {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 8px 0;
-border-bottom: 1px solid rgba(255,255,255,0.05);
-}
+.ai-comment { font-size: 0.75rem; color: var(–accent2); line-height: 1.6; min-height: 36px; font-style: italic; }
+
+.score-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .score-row:last-child { border-bottom: none; }
-
-.score-label {
-display: flex;
-align-items: center;
-gap: 8px;
-font-size: 0.85rem;
-color: var(–text-dim);
-}
-.dot {
-width: 12px; height: 12px;
-border-radius: 50%;
-}
+.score-label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: var(–text-dim); }
+.dot { width: 12px; height: 12px; border-radius: 50%; }
 .dot.black { background: #333; box-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
 .dot.white { background: #eee; box-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
+.score-val { font-size: 1.4rem; font-family: ‘Noto Serif KR’, serif; color: var(–text); }
 
-.score-val {
-font-size: 1.4rem;
-font-family: ‘Noto Serif KR’, serif;
-color: var(–text);
-}
-
-/* Buttons */
 .btn {
-width: 100%;
-padding: 10px;
-border: 1px solid rgba(212,168,67,0.3);
-border-radius: 4px;
-background: transparent;
-color: var(–accent);
-font-family: ‘Noto Sans KR’, sans-serif;
-font-size: 0.85rem;
-letter-spacing: 0.1em;
-cursor: pointer;
-transition: background 0.2s, border-color 0.2s;
+width: 100%; padding: 9px; border: 1px solid rgba(212,168,67,0.3); border-radius: 4px;
+background: transparent; color: var(–accent); font-family: ‘Noto Sans KR’, sans-serif;
+font-size: 0.82rem; letter-spacing: 0.08em; cursor: pointer; transition: background 0.2s, border-color 0.2s;
 }
-.btn:hover {
-background: rgba(212,168,67,0.1);
-border-color: var(–accent);
-}
-.btn.primary {
-background: var(–accent);
-color: #1a110a;
-font-weight: 700;
-border-color: var(–accent);
-}
+.btn:hover { background: rgba(212,168,67,0.1); border-color: var(–accent); }
+.btn.primary { background: var(–accent); color: #1a110a; font-weight: 700; border-color: var(–accent); }
 .btn.primary:hover { background: #e0b84e; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Log */
-.log-box {
-max-height: 120px;
-overflow-y: auto;
-font-size: 0.75rem;
-color: var(–text-dim);
-line-height: 1.8;
+.color-selector { display: flex; gap: 8px; margin-top: 4px; }
+.color-opt {
+flex: 1; padding: 8px 6px; border-radius: 4px; cursor: pointer;
+border: 1px solid rgba(212,168,67,0.2); background: transparent; color: var(–text-dim);
+font-family: ‘Noto Sans KR’, sans-serif; font-size: 0.78rem; text-align: center;
+transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px;
 }
+.color-opt.selected { border-color: var(–accent); color: var(–accent); background: rgba(212,168,67,0.1); }
+.color-opt:hover:not(.selected) { color: var(–text); }
+.color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.color-dot.b { background: #333; }
+.color-dot.w { background: #eee; }
+
+.log-box { max-height: 110px; overflow-y: auto; font-size: 0.72rem; color: var(–text-dim); line-height: 1.8; }
 .log-box::-webkit-scrollbar { width: 3px; }
 .log-box::-webkit-scrollbar-thumb { background: rgba(212,168,67,0.2); }
-
 .log-entry { padding: 1px 0; }
 .log-entry.capture { color: #c87c5a; }
 .log-entry.pass { color: #7caaaa; }
+.log-entry.ai { color: var(–accent2); }
 
-/* Message overlay */
-#message {
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.75);
-display: none;
-align-items: center;
-justify-content: center;
-z-index: 100;
-}
+#message { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 100; }
 #message.show { display: flex; }
-
-.msg-box {
-background: var(–panel);
-border: 1px solid var(–accent);
-border-radius: 8px;
-padding: 32px 40px;
-text-align: center;
-box-shadow: 0 24px 64px rgba(0,0,0,0.8);
-}
-.msg-box h2 {
-font-family: ‘Noto Serif KR’, serif;
-font-size: 1.8rem;
-color: var(–accent);
-margin-bottom: 8px;
-}
-.msg-box p { color: var(–text-dim); font-size: 0.9rem; margin-bottom: 24px; }
+.msg-box { background: var(–panel); border: 1px solid var(–accent); border-radius: 8px; padding: 32px 40px; text-align: center; box-shadow: 0 24px 64px rgba(0,0,0,0.8); max-width: 360px; }
+.msg-box h2 { font-family: ‘Noto Serif KR’, serif; font-size: 1.8rem; color: var(–accent); margin-bottom: 8px; }
+.msg-box p { color: var(–text-dim); font-size: 0.88rem; margin-bottom: 24px; line-height: 1.6; }
 
 @media (max-width: 600px) {
 .panel { width: 100%; flex-direction: row; flex-wrap: wrap; }
@@ -271,13 +147,15 @@ header h1 { font-size: 1.6rem; }
   <p>Baduk · 围棋 · Go</p>
 </header>
 
+<div class="mode-bar">
+  <button class="mode-btn active" id="modeHuman" onclick="setMode('human')">👥 2인 대국</button>
+  <button class="mode-btn" id="modeAI" onclick="setMode('ai')">🤖 AI 대결</button>
+</div>
+
 <div class="game-layout">
-  <div class="board-wrap">
-    <canvas id="board"></canvas>
-  </div>
+  <div class="board-wrap"><canvas id="board"></canvas></div>
 
   <div class="panel">
-    <!-- Turn -->
     <div class="card">
       <h3>차례</h3>
       <div class="turn-display">
@@ -290,40 +168,54 @@ header h1 { font-size: 1.6rem; }
     </div>
 
 ```
-<!-- Score -->
+<div class="card" id="aiSettingsCard" style="display:none">
+  <h3>AI 설정</h3>
+  <div style="font-size:0.78rem;color:var(--text-dim);margin-bottom:8px;">내 돌 색깔</div>
+  <div class="color-selector">
+    <div class="color-opt selected" id="optBlack" onclick="setPlayerColor('black')">
+      <div class="color-dot b"></div> 흑 (선)
+    </div>
+    <div class="color-opt" id="optWhite" onclick="setPlayerColor('white')">
+      <div class="color-dot w"></div> 백 (후)
+    </div>
+  </div>
+</div>
+
+<div class="card" id="aiCommentCard" style="display:none">
+  <h3>AI 코멘트 <span class="ai-badge">Claude</span></h3>
+  <div class="ai-comment" id="aiComment">게임을 시작하세요.</div>
+</div>
+
 <div class="card">
   <h3>잡은 돌</h3>
   <div class="score-row">
-    <div class="score-label"><div class="dot black"></div> 흑</div>
+    <div class="score-label"><div class="dot black"></div><span id="blackLabel">흑</span></div>
     <div class="score-val" id="captureBlack">0</div>
   </div>
   <div class="score-row">
-    <div class="score-label"><div class="dot white"></div> 백</div>
+    <div class="score-label"><div class="dot white"></div><span id="whiteLabel">백</span></div>
     <div class="score-val" id="captureWhite">0</div>
   </div>
 </div>
 
-<!-- Controls -->
 <div class="card">
   <h3>조작</h3>
-  <div style="display:flex;flex-direction:column;gap:8px;">
-    <button class="btn" onclick="passTurn()">패스</button>
-    <button class="btn" onclick="undoMove()">무르기</button>
+  <div style="display:flex;flex-direction:column;gap:7px;">
+    <button class="btn" id="passBtn" onclick="passTurn()">패스</button>
+    <button class="btn" id="undoBtn" onclick="undoMove()">무르기</button>
     <button class="btn primary" onclick="confirmNewGame()">새 게임</button>
   </div>
 </div>
 
-<!-- Size -->
 <div class="card">
   <h3>바둑판 크기</h3>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+  <div style="display:flex;gap:6px;">
     <button class="btn" style="flex:1" onclick="setSize(9)">9×9</button>
     <button class="btn" style="flex:1" onclick="setSize(13)">13×13</button>
     <button class="btn" style="flex:1" onclick="setSize(19)">19×19</button>
   </div>
 </div>
 
-<!-- Log -->
 <div class="card">
   <h3>기보</h3>
   <div class="log-box" id="logBox"></div>
@@ -333,356 +225,431 @@ header h1 { font-size: 1.6rem; }
   </div>
 </div>
 
-<!-- Overlay -->
-
 <div id="message">
   <div class="msg-box">
     <h2 id="msgTitle">게임 종료</h2>
-    <p id="msgBody">두 번 연속 패스로 게임이 종료되었습니다.</p>
+    <p id="msgBody"></p>
     <button class="btn primary" onclick="newGame()">새 게임 시작</button>
   </div>
 </div>
 
 <script>
-// ── Constants ─────────────────────────────────────────────
-const EMPTY = 0, BLACK = 1, WHITE = 2;
-const CELL = 38;   // px per grid cell
-const STONE_R = 16; // stone radius
-const MARGIN = 28;  // board edge margin
+const EMPTY=0, BLACK=1, WHITE=2;
+const CELL=38, STONE_R=16, MARGIN=28;
 
-let BOARD_SIZE = 19;
+let BOARD_SIZE=19;
 let board, prevBoard, turn, moveNum, captureBlack, captureWhite, history, consecutivePasses;
+let gameMode='human', playerColor=BLACK, aiColor=WHITE, aiThinking=false;
 
-// ── Init ──────────────────────────────────────────────────
-const canvas = document.getElementById('board');
-const ctx = canvas.getContext('2d');
+const canvas=document.getElementById('board');
+const ctx=canvas.getContext('2d');
 
+// ── Init ───────────────────────────────────────────────────
 function initBoard(size) {
-  BOARD_SIZE = size;
-  const px = MARGIN * 2 + CELL * (BOARD_SIZE - 1);
-  canvas.width = px;
-  canvas.height = px;
-  board = Array.from({length: BOARD_SIZE}, () => new Array(BOARD_SIZE).fill(EMPTY));
-  prevBoard = null;
-  turn = BLACK;
-  moveNum = 1;
-  captureBlack = 0;
-  captureWhite = 0;
-  history = [];
-  consecutivePasses = 0;
-  document.getElementById('logBox').innerHTML = '';
+  BOARD_SIZE=size;
+  const px=MARGIN*2+CELL*(BOARD_SIZE-1);
+  canvas.width=px; canvas.height=px;
+  board=Array.from({length:BOARD_SIZE},()=>new Array(BOARD_SIZE).fill(EMPTY));
+  prevBoard=null; turn=BLACK; moveNum=1;
+  captureBlack=0; captureWhite=0;
+  history=[]; consecutivePasses=0; aiThinking=false;
+  canvas.classList.remove('ai-thinking');
+  setInputEnabled(true);
+  document.getElementById('logBox').innerHTML='';
+  setAIComment('게임을 시작하세요.');
   hide('message');
-  updateUI();
-  draw();
+  updateUI(); draw();
+  if (gameMode==='ai' && turn===aiColor) setTimeout(doAIMove,800);
 }
 
-// ── Drawing ───────────────────────────────────────────────
+// ── Draw ───────────────────────────────────────────────────
 function draw() {
-  const C = CELL, M = MARGIN, S = BOARD_SIZE;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Wood grain subtle lines
+  const C=CELL,M=MARGIN,S=BOARD_SIZE;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.save();
-  for (let i = 0; i < 18; i++) {
-    const y = Math.random() * canvas.height;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y + (Math.random()-0.5)*8);
-    ctx.strokeStyle = 'rgba(100,60,10,0.04)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+  for(let i=0;i<18;i++){
+    const y=Math.random()*canvas.height;
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y+(Math.random()-0.5)*8);
+    ctx.strokeStyle='rgba(100,60,10,0.04)';ctx.lineWidth=1;ctx.stroke();
   }
   ctx.restore();
-
-  // Grid lines
-  ctx.strokeStyle = '#5a3e1b';
-  ctx.lineWidth = 0.8;
-  for (let i = 0; i < S; i++) {
-    const x = M + i * C, y = M + i * C;
-    ctx.beginPath(); ctx.moveTo(x, M); ctx.lineTo(x, M + (S-1)*C); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(M, y); ctx.lineTo(M + (S-1)*C, y); ctx.stroke();
+  ctx.strokeStyle='#5a3e1b';ctx.lineWidth=0.8;
+  for(let i=0;i<S;i++){
+    const x=M+i*C,y=M+i*C;
+    ctx.beginPath();ctx.moveTo(x,M);ctx.lineTo(x,M+(S-1)*C);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(M+(S-1)*C,y);ctx.stroke();
   }
-
-  // Star points
-  const stars = getStarPoints(S);
-  stars.forEach(([r,c]) => {
-    ctx.beginPath();
-    ctx.arc(M + c*C, M + r*C, 3.5, 0, Math.PI*2);
-    ctx.fillStyle = '#5a3e1b';
-    ctx.fill();
+  getStarPoints(S).forEach(([r,c])=>{
+    ctx.beginPath();ctx.arc(M+c*C,M+r*C,3.5,0,Math.PI*2);ctx.fillStyle='#5a3e1b';ctx.fill();
   });
-
-  // Stones
-  for (let r = 0; r < S; r++) {
-    for (let c = 0; c < S; c++) {
-      if (board[r][c]) drawStone(M + c*C, M + r*C, board[r][c]);
-    }
-  }
-
-  // Last move marker
-  if (history.length) {
-    const last = history[history.length-1];
-    if (last && last.r !== undefined) {
-      const x = M + last.c*C, y = M + last.r*C;
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, Math.PI*2);
-      ctx.strokeStyle = last.color === BLACK ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+  for(let r=0;r<S;r++) for(let c=0;c<S;c++) if(board[r][c]) drawStone(M+c*C,M+r*C,board[r][c]);
+  if(history.length){
+    const last=history[history.length-1];
+    if(last&&last.r!==undefined){
+      const x=M+last.c*C,y=M+last.r*C;
+      ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);
+      ctx.strokeStyle=last.color===BLACK?'rgba(255,255,255,0.6)':'rgba(0,0,0,0.4)';
+      ctx.lineWidth=1.5;ctx.stroke();
     }
   }
 }
 
-function drawStone(x, y, color) {
-  const r = STONE_R;
-  ctx.save();
-  if (color === BLACK) {
-    const g = ctx.createRadialGradient(x-r*0.3, y-r*0.3, r*0.05, x, y, r);
-    g.addColorStop(0, '#666');
-    g.addColorStop(0.4, '#222');
-    g.addColorStop(1, '#0a0a0a');
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
-    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
-    ctx.fillStyle = g; ctx.fill();
+function drawStone(x,y,color){
+  const r=STONE_R;ctx.save();
+  if(color===BLACK){
+    const g=ctx.createRadialGradient(x-r*0.3,y-r*0.3,r*0.05,x,y,r);
+    g.addColorStop(0,'#666');g.addColorStop(0.4,'#222');g.addColorStop(1,'#0a0a0a');
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=6;ctx.shadowOffsetY=3;
+    ctx.fillStyle=g;ctx.fill();
   } else {
-    const g = ctx.createRadialGradient(x-r*0.3, y-r*0.35, r*0.05, x, y, r);
-    g.addColorStop(0, '#ffffff');
-    g.addColorStop(0.5, '#e8e0d0');
-    g.addColorStop(1, '#c0b898');
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
-    ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
-    ctx.fillStyle = g; ctx.fill();
-    ctx.strokeStyle = 'rgba(160,140,100,0.5)'; ctx.lineWidth = 0.5; ctx.stroke();
+    const g=ctx.createRadialGradient(x-r*0.3,y-r*0.35,r*0.05,x,y,r);
+    g.addColorStop(0,'#ffffff');g.addColorStop(0.5,'#e8e0d0');g.addColorStop(1,'#c0b898');
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.shadowColor='rgba(0,0,0,0.35)';ctx.shadowBlur=5;ctx.shadowOffsetY=2;
+    ctx.fillStyle=g;ctx.fill();
+    ctx.strokeStyle='rgba(160,140,100,0.5)';ctx.lineWidth=0.5;ctx.stroke();
   }
   ctx.restore();
 }
 
-function getStarPoints(size) {
-  if (size === 9)  return [[2,2],[2,6],[6,2],[6,6],[4,4]];
-  if (size === 13) return [[3,3],[3,9],[9,3],[9,9],[6,6]];
+function getStarPoints(size){
+  if(size===9)  return [[2,2],[2,6],[6,2],[6,6],[4,4]];
+  if(size===13) return [[3,3],[3,9],[9,3],[9,9],[6,6]];
   return [[3,3],[3,9],[3,15],[9,3],[9,9],[9,15],[15,3],[15,9],[15,15]];
 }
 
-// ── Game Logic ────────────────────────────────────────────
-function getNeighbors(r, c) {
-  return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]]
-    .filter(([nr,nc]) => nr>=0 && nr<BOARD_SIZE && nc>=0 && nc<BOARD_SIZE);
+// ── Game Logic ─────────────────────────────────────────────
+function getNeighbors(r,c){
+  return [[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([nr,nc])=>nr>=0&&nr<BOARD_SIZE&&nc>=0&&nc<BOARD_SIZE);
 }
-
-function getGroup(r, c, color, b) {
-  const visited = new Set();
-  const queue = [[r,c]];
-  while (queue.length) {
-    const [cr,cc] = queue.pop();
-    const key = cr*BOARD_SIZE+cc;
-    if (visited.has(key)) continue;
+function getGroup(r,c,color,b){
+  const visited=new Set(),queue=[[r,c]];
+  while(queue.length){
+    const [cr,cc]=queue.pop(),key=cr*BOARD_SIZE+cc;
+    if(visited.has(key)) continue;
     visited.add(key);
-    getNeighbors(cr,cc).forEach(([nr,nc]) => {
-      if (b[nr][nc] === color) queue.push([nr,nc]);
-    });
+    getNeighbors(cr,cc).forEach(([nr,nc])=>{if(b[nr][nc]===color)queue.push([nr,nc]);});
   }
-  return [...visited].map(k => [Math.floor(k/BOARD_SIZE), k%BOARD_SIZE]);
+  return [...visited].map(k=>[Math.floor(k/BOARD_SIZE),k%BOARD_SIZE]);
 }
-
-function getLiberties(group, b) {
-  const libs = new Set();
-  group.forEach(([r,c]) => {
-    getNeighbors(r,c).forEach(([nr,nc]) => {
-      if (b[nr][nc] === EMPTY) libs.add(nr*BOARD_SIZE+nc);
-    });
-  });
+function getLiberties(group,b){
+  const libs=new Set();
+  group.forEach(([r,c])=>getNeighbors(r,c).forEach(([nr,nc])=>{if(b[nr][nc]===EMPTY)libs.add(nr*BOARD_SIZE+nc);}));
   return libs.size;
 }
-
-function cloneBoard(b) {
-  return b.map(row => [...row]);
-}
-
-function removeDeadGroup(r, c, b) {
-  const color = b[r][c];
-  const group = getGroup(r, c, color, b);
-  if (getLiberties(group, b) === 0) {
-    group.forEach(([gr,gc]) => b[gr][gc] = EMPTY);
-    return group.length;
-  }
+function cloneBoard(b){return b.map(row=>[...row]);}
+function removeDeadGroup(r,c,b){
+  const color=b[r][c],group=getGroup(r,c,color,b);
+  if(getLiberties(group,b)===0){group.forEach(([gr,gc])=>b[gr][gc]=EMPTY);return group.length;}
   return 0;
 }
 
-function placeStone(r, c) {
-  if (board[r][c] !== EMPTY) return;
-
-  const newBoard = cloneBoard(board);
-  const opponent = turn === BLACK ? WHITE : BLACK;
-
-  newBoard[r][c] = turn;
-
-  // Capture opponent groups
-  let captured = 0;
-  getNeighbors(r,c).forEach(([nr,nc]) => {
-    if (newBoard[nr][nc] === opponent) {
-      captured += removeDeadGroup(nr, nc, newBoard);
-    }
+function placeStone(r,c){
+  if(board[r][c]!==EMPTY) return false;
+  const newBoard=cloneBoard(board);
+  const opponent=turn===BLACK?WHITE:BLACK;
+  newBoard[r][c]=turn;
+  let captured=0;
+  getNeighbors(r,c).forEach(([nr,nc])=>{
+    if(newBoard[nr][nc]===opponent) captured+=removeDeadGroup(nr,nc,newBoard);
   });
-
-  // Check self-capture (suicide rule - not allowed unless it captures)
-  const myGroup = getGroup(r, c, turn, newBoard);
-  if (getLiberties(myGroup, newBoard) === 0) return; // illegal
-
-  // Ko rule
-  if (prevBoard) {
-    const same = newBoard.every((row,ri) => row.every((v,ci) => v === prevBoard[ri][ci]));
-    if (same) { addLog(`코(Ko) - 착수 불가`, ''); return; }
+  const myGroup=getGroup(r,c,turn,newBoard);
+  if(getLiberties(myGroup,newBoard)===0) return false;
+  if(prevBoard){
+    const same=newBoard.every((row,ri)=>row.every((v,ci)=>v===prevBoard[ri][ci]));
+    if(same){addLog('코(Ko) — 착수 불가','');return false;}
   }
-
-  // Commit
-  const boardBefore = cloneBoard(board);
-  const prevBoardBefore = prevBoard ? cloneBoard(prevBoard) : null;
-  prevBoard = cloneBoard(board);
-  history.push({r, c, color: turn, captured, boardBefore, prevBoardBefore});
-  board = newBoard;
-  if (turn === BLACK) captureBlack += captured;
-  else captureWhite += captured;
-  consecutivePasses = 0;
-
-  const colLabel = String.fromCharCode(65 + (c >= 8 ? c+1 : c));
-  const rowLabel = BOARD_SIZE - r;
-  const name = turn === BLACK ? '흑' : '백';
-  if (captured > 0) addLog(`${moveNum}. ${name} ${colLabel}${rowLabel} (${captured}개 따냄)`, 'capture');
-  else addLog(`${moveNum}. ${name} ${colLabel}${rowLabel}`, '');
-
-  moveNum++;
-  turn = opponent;
-  updateUI();
-  draw();
+  const boardBefore=cloneBoard(board);
+  const prevBoardBefore=prevBoard?cloneBoard(prevBoard):null;
+  prevBoard=cloneBoard(board);
+  history.push({r,c,color:turn,captured,boardBefore,prevBoardBefore});
+  board=newBoard;
+  if(turn===BLACK) captureBlack+=captured; else captureWhite+=captured;
+  consecutivePasses=0;
+  const col=String.fromCharCode(65+(c>=8?c+1:c));
+  const row=BOARD_SIZE-r;
+  const name=turn===BLACK?'흑':'백';
+  const isAI=gameMode==='ai'&&turn===aiColor;
+  if(captured>0) addLog(`${moveNum}. ${name}${isAI?' 🤖':''} ${col}${row} (${captured}개 따냄)`,isAI?'ai':'capture');
+  else addLog(`${moveNum}. ${name}${isAI?' 🤖':''} ${col}${row}`,isAI?'ai':'');
+  moveNum++;turn=opponent;
+  updateUI();draw();
+  return true;
 }
 
-function passTurn() {
-  const name = turn === BLACK ? '흑' : '백';
+function passTurn(){
+  if(aiThinking) return;
+  const name=turn===BLACK?'흑':'백';
+  const isAI=gameMode==='ai'&&turn===aiColor;
   consecutivePasses++;
-  history.push({r: undefined, color: turn, captured: 0});
-  addLog(`${moveNum}. ${name} 패스`, 'pass');
-  moveNum++;
-  turn = turn === BLACK ? WHITE : BLACK;
-  updateUI();
-  draw();
-  if (consecutivePasses >= 2) endGame();
+  history.push({r:undefined,color:turn,captured:0,boardBefore:cloneBoard(board),prevBoardBefore:prevBoard?cloneBoard(prevBoard):null});
+  addLog(`${moveNum}. ${name}${isAI?' 🤖':''} 패스`,'pass');
+  moveNum++;turn=turn===BLACK?WHITE:BLACK;
+  updateUI();draw();
+  if(consecutivePasses>=2){endGame();return;}
+  if(gameMode==='ai'&&turn===aiColor) setTimeout(doAIMove,600);
 }
 
-function undoMove() {
-  if (history.length === 0) return;
-  const last = history.pop();
-  if (last.r !== undefined) {
-    if (last.color === BLACK) captureBlack -= last.captured;
-    else captureWhite -= last.captured;
-    board = last.boardBefore ? cloneBoard(last.boardBefore) : Array.from({length: BOARD_SIZE}, () => new Array(BOARD_SIZE).fill(EMPTY));
-    prevBoard = last.prevBoardBefore || null;
+function undoMove(){
+  if(aiThinking) return;
+  const steps=(gameMode==='ai'&&history.length>=2)?2:1;
+  for(let i=0;i<steps;i++){
+    if(history.length===0) break;
+    const last=history.pop();
+    if(last.boardBefore){
+      if(last.color===BLACK) captureBlack-=last.captured; else captureWhite-=last.captured;
+      board=cloneBoard(last.boardBefore);
+      prevBoard=last.prevBoardBefore||null;
+    }
+    turn=last.color;
+    moveNum=Math.max(1,moveNum-1);
+    const logBox=document.getElementById('logBox');
+    if(logBox.lastChild) logBox.removeChild(logBox.lastChild);
   }
-  turn = last.color;
-  moveNum = Math.max(1, moveNum - 1);
-  consecutivePasses = 0;
-  updateUI();
-  draw();
-  const logBox = document.getElementById('logBox');
-  if (logBox.lastChild) logBox.removeChild(logBox.lastChild);
+  consecutivePasses=0;
+  updateUI();draw();
 }
 
-// ── UI ────────────────────────────────────────────────────
-function updateUI() {
-  const isBlack = turn === BLACK;
-  document.getElementById('turnName').textContent = isBlack ? '흑돌' : '백돌';
-  document.getElementById('turnNum').textContent = `${moveNum}수`;
-  const stone = document.getElementById('turnStone');
-  stone.className = 'stone-icon ' + (isBlack ? 'black' : 'white') + ' active';
-  document.getElementById('captureBlack').textContent = captureBlack;
-  document.getElementById('captureWhite').textContent = captureWhite;
+// ── AI ─────────────────────────────────────────────────────
+async function doAIMove(){
+  if(turn!==aiColor||aiThinking) return;
+  aiThinking=true;
+  canvas.classList.add('ai-thinking');
+  setAIComment('<span class="thinking-dots"><span>●</span><span>●</span><span>●</span></span>');
+  setInputEnabled(false);
+
+  const aiColorName=aiColor===BLACK?'흑(Black)':'백(White)';
+  const playerColorName=playerColor===BLACK?'흑(Black)':'백(White)';
+  const recentMoves=history.slice(-8).map(h=>{
+    if(h.r===undefined) return `${h.color===BLACK?'흑':'백'}:패스`;
+    const col=String.fromCharCode(65+(h.c>=8?h.c+1:h.c));
+    return `${h.color===BLACK?'흑':'백'}:${col}${BOARD_SIZE-h.r}`;
+  }).join(' ');
+
+  const boardStr=board.map(row=>row.join(' ')).join('\n');
+
+  const prompt=`당신은 바둑 AI입니다. ${BOARD_SIZE}×${BOARD_SIZE} 바둑판에서 최선의 수를 두세요.
+
+당신: ${aiColorName} | 상대: ${playerColorName} | ${moveNum}수째
+최근수: ${recentMoves||'없음'}
+흑따냄:${captureBlack} 백따냄:${captureWhite}
+
+바둑판(0=빈칸,1=흑,2=백):
+${boardStr}
+
+규칙: 빈칸(0)에만 착수, 자살수 금지, 코 금지.
+전략: 활로 많은 곳, 상대 따내기, 집 만들기 우선.
+
+응답 형식(이것만 출력):
+MOVE: [행0-${BOARD_SIZE-1}] [열0-${BOARD_SIZE-1}]
+COMMENT: [한국어 15자 이내 코멘트]
+
+패스시: MOVE: PASS`;
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:120,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.find(b=>b.type==='text')?.text||'';
+    parseAndApplyAIMove(text);
+  } catch(e){
+    console.error(e);
+    setAIComment('연결 오류 — 랜덤 착수');
+    doRandomMove();
+  }
+
+  aiThinking=false;
+  canvas.classList.remove('ai-thinking');
+  setInputEnabled(true);
 }
 
-function addLog(text, type) {
-  const logBox = document.getElementById('logBox');
-  const div = document.createElement('div');
-  div.className = 'log-entry ' + type;
-  div.textContent = text;
-  logBox.appendChild(div);
-  logBox.scrollTop = logBox.scrollHeight;
+function parseAndApplyAIMove(text){
+  const moveMatch=text.match(/MOVE:\s*(\S+)(?:\s+(\d+))?/i);
+  const commentMatch=text.match(/COMMENT:\s*(.+)/i);
+  const comment=commentMatch?commentMatch[1].trim():'';
+
+  if(moveMatch&&moveMatch[1].toUpperCase()==='PASS'){
+    setAIComment(comment||'AI가 패스했습니다.');
+    passTurnAI(); return;
+  }
+
+  if(moveMatch&&moveMatch[2]!==undefined){
+    const r=parseInt(moveMatch[1]),c=parseInt(moveMatch[2]);
+    if(r>=0&&r<BOARD_SIZE&&c>=0&&c<BOARD_SIZE){
+      const ok=placeStone(r,c);
+      if(ok){setAIComment(comment||'');return;}
+    }
+  }
+
+  // fallback: scan all number pairs in text
+  const nums=[...text.matchAll(/\d+/g)].map(m=>parseInt(m[0]));
+  for(let i=0;i<nums.length-1;i++){
+    const r=nums[i],c=nums[i+1];
+    if(r>=0&&r<BOARD_SIZE&&c>=0&&c<BOARD_SIZE&&board[r][c]===EMPTY){
+      const ok=placeStone(r,c);
+      if(ok){setAIComment(comment||'');return;}
+    }
+  }
+
+  setAIComment('랜덤으로 착수합니다.');
+  doRandomMove();
 }
 
-function endGame() {
-  document.getElementById('msgTitle').textContent = '게임 종료';
-  document.getElementById('msgBody').textContent =
+// AI-internal pass (doesn't re-trigger AI)
+function passTurnAI(){
+  const name=turn===BLACK?'흑':'백';
+  consecutivePasses++;
+  history.push({r:undefined,color:turn,captured:0,boardBefore:cloneBoard(board),prevBoardBefore:prevBoard?cloneBoard(prevBoard):null});
+  addLog(`${moveNum}. ${name} 🤖 패스`,'pass');
+  moveNum++;turn=turn===BLACK?WHITE:BLACK;
+  updateUI();draw();
+  if(consecutivePasses>=2) endGame();
+}
+
+function doRandomMove(){
+  const empties=[];
+  for(let r=0;r<BOARD_SIZE;r++) for(let c=0;c<BOARD_SIZE;c++) if(board[r][c]===EMPTY) empties.push([r,c]);
+  for(let i=empties.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[empties[i],empties[j]]=[empties[j],empties[i]];}
+  for(const [r,c] of empties){
+    const nb=cloneBoard(board); nb[r][c]=aiColor;
+    const opp=aiColor===BLACK?WHITE:BLACK;
+    getNeighbors(r,c).forEach(([nr,nc])=>{if(nb[nr][nc]===opp)removeDeadGroup(nr,nc,nb);});
+    if(getLiberties(getGroup(r,c,aiColor,nb),nb)>0){placeStone(r,c);return;}
+  }
+  passTurnAI();
+}
+
+// ── UI ─────────────────────────────────────────────────────
+function setMode(mode){
+  gameMode=mode;
+  document.getElementById('modeHuman').classList.toggle('active',mode==='human');
+  document.getElementById('modeAI').classList.toggle('active',mode==='ai');
+  document.getElementById('aiSettingsCard').style.display=mode==='ai'?'':'none';
+  document.getElementById('aiCommentCard').style.display=mode==='ai'?'':'none';
+  updateScoreLabels();
+  newGame();
+}
+
+function setPlayerColor(color){
+  playerColor=color==='black'?BLACK:WHITE;
+  aiColor=playerColor===BLACK?WHITE:BLACK;
+  document.getElementById('optBlack').classList.toggle('selected',color==='black');
+  document.getElementById('optWhite').classList.toggle('selected',color==='white');
+  updateScoreLabels();
+  newGame();
+}
+
+function updateScoreLabels(){
+  if(gameMode==='ai'){
+    document.getElementById('blackLabel').textContent=playerColor===BLACK?'흑 (나)':'흑 (AI)';
+    document.getElementById('whiteLabel').textContent=playerColor===WHITE?'백 (나)':'백 (AI)';
+  } else {
+    document.getElementById('blackLabel').textContent='흑';
+    document.getElementById('whiteLabel').textContent='백';
+  }
+}
+
+function setAIComment(html){
+  const el=document.getElementById('aiComment');
+  if(el) el.innerHTML=html;
+}
+
+function setInputEnabled(on){
+  document.getElementById('passBtn').disabled=!on;
+  document.getElementById('undoBtn').disabled=!on;
+  canvas.style.pointerEvents=on?'':'none';
+}
+
+function updateUI(){
+  const isBlack=turn===BLACK;
+  const isAITurn=gameMode==='ai'&&turn===aiColor;
+  let name=isBlack?'흑돌':'백돌';
+  if(gameMode==='ai') name+=isAITurn?' 🤖':' (나)';
+  document.getElementById('turnName').textContent=name;
+  document.getElementById('turnNum').textContent=`${moveNum}수`;
+  const stone=document.getElementById('turnStone');
+  stone.className='stone-icon '+(isBlack?'black':'white')+' active';
+  document.getElementById('captureBlack').textContent=captureBlack;
+  document.getElementById('captureWhite').textContent=captureWhite;
+}
+
+function addLog(text,type){
+  const logBox=document.getElementById('logBox');
+  const div=document.createElement('div');
+  div.className='log-entry '+type;div.textContent=text;
+  logBox.appendChild(div);logBox.scrollTop=logBox.scrollHeight;
+}
+
+function endGame(){
+  document.getElementById('msgTitle').textContent='게임 종료';
+  document.getElementById('msgBody').textContent=
     `두 번 연속 패스로 게임이 종료되었습니다.\n흑 따낸 돌: ${captureBlack}개 / 백 따낸 돌: ${captureWhite}개`;
   show('message');
 }
 
-function show(id) { document.getElementById(id).classList.add('show'); }
-function hide(id) { document.getElementById(id).classList.remove('show'); }
+function show(id){document.getElementById(id).classList.add('show');}
+function hide(id){document.getElementById(id).classList.remove('show');}
+function newGame(){initBoard(BOARD_SIZE);}
+function setSize(s){initBoard(s);}
+function confirmNewGame(){if(confirm('새 게임을 시작하시겠습니까?'))newGame();}
 
-function newGame() { initBoard(BOARD_SIZE); }
-function setSize(s) { initBoard(s); }
-function confirmNewGame() {
-  if (confirm('새 게임을 시작하시겠습니까?')) newGame();
-}
-
-// ── Mouse / Touch ─────────────────────────────────────────
-function getCell(px, py) {
-  const col = Math.round((px - MARGIN) / CELL);
-  const row = Math.round((py - MARGIN) / CELL);
-  if (col < 0 || col >= BOARD_SIZE || row < 0 || row >= BOARD_SIZE) return null;
-  // Only snap if close enough
-  const sx = MARGIN + col * CELL, sy = MARGIN + row * CELL;
-  if (Math.abs(px - sx) < CELL/2 && Math.abs(py - sy) < CELL/2) return [row, col];
+// ── Input ──────────────────────────────────────────────────
+function getCell(px,py){
+  const col=Math.round((px-MARGIN)/CELL),row=Math.round((py-MARGIN)/CELL);
+  if(col<0||col>=BOARD_SIZE||row<0||row>=BOARD_SIZE) return null;
+  const sx=MARGIN+col*CELL,sy=MARGIN+row*CELL;
+  if(Math.abs(px-sx)<CELL/2&&Math.abs(py-sy)<CELL/2) return [row,col];
   return null;
 }
-
-function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-  if (e.touches) {
-    return [(e.touches[0].clientX - rect.left) * scaleX,
-            (e.touches[0].clientY - rect.top) * scaleY];
-  }
-  return [(e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY];
+function getPos(e){
+  const rect=canvas.getBoundingClientRect();
+  const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
+  if(e.touches) return [(e.touches[0].clientX-rect.left)*sx,(e.touches[0].clientY-rect.top)*sy];
+  return [(e.clientX-rect.left)*sx,(e.clientY-rect.top)*sy];
 }
 
-canvas.addEventListener('click', e => {
-  const [px, py] = getPos(e);
-  const cell = getCell(px, py);
-  if (cell) placeStone(...cell);
+function handleClick(e){
+  if(aiThinking) return;
+  if(gameMode==='ai'&&turn===aiColor) return;
+  const [px,py]=getPos(e);
+  const cell=getCell(px,py);
+  if(!cell) return;
+  const ok=placeStone(...cell);
+  if(ok&&gameMode==='ai'&&turn===aiColor&&consecutivePasses<2)
+    setTimeout(doAIMove,700);
+}
+
+canvas.addEventListener('click',handleClick);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();handleClick(e);},{passive:false});
+
+let hoverCell=null;
+canvas.addEventListener('mousemove',e=>{
+  if(aiThinking||(gameMode==='ai'&&turn===aiColor)){hoverCell=null;draw();return;}
+  const [px,py]=getPos(e);
+  const cell=getCell(px,py);
+  const key=cell?cell[0]+','+cell[1]:null;
+  const pk=hoverCell?hoverCell[0]+','+hoverCell[1]:null;
+  if(key!==pk){hoverCell=cell;drawWithHover();}
 });
+canvas.addEventListener('mouseleave',()=>{hoverCell=null;draw();});
 
-canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  const [px, py] = getPos(e);
-  const cell = getCell(px, py);
-  if (cell) placeStone(...cell);
-}, {passive: false});
-
-// Hover highlight
-let hoverCell = null;
-canvas.addEventListener('mousemove', e => {
-  const [px, py] = getPos(e);
-  const cell = getCell(px, py);
-  const key = cell ? cell[0]+','+cell[1] : null;
-  const prevKey = hoverCell ? hoverCell[0]+','+hoverCell[1] : null;
-  if (key !== prevKey) {
-    hoverCell = cell;
-    drawWithHover();
-  }
-});
-canvas.addEventListener('mouseleave', () => { hoverCell = null; draw(); });
-
-function drawWithHover() {
+function drawWithHover(){
   draw();
-  if (!hoverCell) return;
-  const [r,c] = hoverCell;
-  if (board[r][c] !== EMPTY) return;
-  const x = MARGIN + c * CELL, y = MARGIN + r * CELL;
-  ctx.globalAlpha = 0.35;
-  drawStone(x, y, turn);
-  ctx.globalAlpha = 1;
+  if(!hoverCell) return;
+  const [r,c]=hoverCell;
+  if(board[r][c]!==EMPTY) return;
+  const x=MARGIN+c*CELL,y=MARGIN+r*CELL;
+  ctx.globalAlpha=0.35;drawStone(x,y,turn);ctx.globalAlpha=1;
 }
 
-// ── Start ─────────────────────────────────────────────────
 initBoard(19);
 </script>
 
