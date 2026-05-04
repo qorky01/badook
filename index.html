@@ -411,7 +411,136 @@ function undoMove(){
   updateUI();draw();
 }
 
-// ── AI ─────────────────────────────────────────────────────
+// ── AI Engine (Heuristic) ──────────────────────────────────
+
+// 착수 가능 여부 검사 (자살수·코 제외)
+function isLegalMove(r, c, color) {
+  if (board[r][c] !== EMPTY) return false;
+  const opp = color===BLACK ? WHITE : BLACK;
+  const nb = cloneBoard(board);
+  nb[r][c] = color;
+  // 상대 그룹 따내기 먼저
+  getNeighbors(r,c).forEach(([nr,nc])=>{ if(nb[nr][nc]===opp) removeDeadGroup(nr,nc,nb); });
+  // 자살수 검사
+  if (getLiberties(getGroup(r,c,color,nb), nb) === 0) return false;
+  // 코 검사
+  if (prevBoard) {
+    const same = nb.every((row,ri)=>row.every((v,ci)=>v===prevBoard[ri][ci]));
+    if (same) return false;
+  }
+  return true;
+}
+
+// 착수 후 따내는 돌 수 계산
+function captureCount(r, c, color) {
+  const opp = color===BLACK ? WHITE : BLACK;
+  const nb = cloneBoard(board);
+  nb[r][c] = color;
+  let cap = 0;
+  getNeighbors(r,c).forEach(([nr,nc])=>{ if(nb[nr][nc]===opp) cap+=removeDeadGroup(nr,nc,nb); });
+  return cap;
+}
+
+// 착수 후 내 그룹 활로 수
+function libertiesAfter(r, c, color) {
+  const opp = color===BLACK ? WHITE : BLACK;
+  const nb = cloneBoard(board);
+  nb[r][c] = color;
+  getNeighbors(r,c).forEach(([nr,nc])=>{ if(nb[nr][nc]===opp) removeDeadGroup(nr,nc,nb); });
+  return getLiberties(getGroup(r,c,color,nb), nb);
+}
+
+// 상대 그룹 활로가 몇 개인지 (2이하면 위험)
+function opponentLibertiesNear(r, c, color) {
+  const opp = color===BLACK ? WHITE : BLACK;
+  const nb = cloneBoard(board);
+  nb[r][c] = color;
+  getNeighbors(r,c).forEach(([nr,nc])=>{ if(nb[nr][nc]===opp) removeDeadGroup(nr,nc,nb); });
+  let minLib = 999;
+  getNeighbors(r,c).forEach(([nr,nc])=>{
+    if(board[nr][nc]===opp) {
+      const grp = getGroup(nr,nc,opp,nb);
+      const lib = getLiberties(grp,nb);
+      if(lib < minLib) minLib = lib;
+    }
+  });
+  return minLib;
+}
+
+// 내 그룹 중 위기(활로 1~2)인 것 구하기
+function myGroupsInAtari(color) {
+  const visited = new Set();
+  const atari = [];
+  for(let r=0;r<BOARD_SIZE;r++) for(let c=0;c<BOARD_SIZE;c++) {
+    if(board[r][c]!==color) continue;
+    const key=r*BOARD_SIZE+c;
+    if(visited.has(key)) continue;
+    const grp = getGroup(r,c,color,board);
+    grp.forEach(([gr,gc])=>visited.add(gr*BOARD_SIZE+gc));
+    const lib = getLiberties(grp,board);
+    if(lib<=2) atari.push({grp,lib});
+  }
+  return atari;
+}
+
+// 후보 수 점수 계산 (초급자 수준 휴리스틱)
+function scoreMove(r, c, color) {
+  const opp = color===BLACK ? WHITE : BLACK;
+  let score = 0;
+
+  const cap = captureCount(r, c, color);
+  score += cap * 15;               // 따내기 최우선
+
+  const myLib = libertiesAfter(r, c, color);
+  if (myLib <= 1) return -9999;    // 자살수에 가까운 수 제외
+  score += myLib * 2;              // 활로 많을수록 좋음
+
+  // 상대 위협 (아타리)
+  const oppLib = opponentLibertiesNear(r, c, color);
+  if (oppLib === 1) score += 20;   // 상대 1활로 = 다음 따낼 수 있음
+  else if (oppLib === 2) score += 8;
+
+  // 내 위기 그룹 탈출
+  myGroupsInAtari(color).forEach(({grp,lib})=>{
+    const inGroup = grp.some(([gr,gc])=>getNeighbors(r,c).some(([nr,nc])=>nr===gr&&nc===gc));
+    if(inGroup && lib===1) score += 25; // 절박한 탈출
+  });
+
+  // 이웃에 내 돌이 있으면 연결 선호
+  const myNeighbors = getNeighbors(r,c).filter(([nr,nc])=>board[nr][nc]===color).length;
+  score += myNeighbors * 3;
+
+  // 중앙/화점 선호 (초반)
+  if(moveNum < 20) {
+    const mid = (BOARD_SIZE-1)/2;
+    const dist = Math.abs(r-mid)+Math.abs(c-mid);
+    score += Math.max(0, 6-dist);
+  }
+
+  // 눈(양쪽이 막힌 공간)에는 두지 않음 — 비효율
+  const emptyNeighbors = getNeighbors(r,c).filter(([nr,nc])=>board[nr][nc]===EMPTY).length;
+  if(emptyNeighbors===0 && cap===0) score -= 10;
+
+  // 초급자답게 약간의 랜덤성 추가 (너무 기계적이지 않게)
+  score += Math.random() * 4;
+
+  return score;
+}
+
+// 최선 착수 선택
+function pickBestMove(color) {
+  let best = null, bestScore = -Infinity;
+  for(let r=0;r<BOARD_SIZE;r++) {
+    for(let c=0;c<BOARD_SIZE;c++) {
+      if(!isLegalMove(r,c,color)) continue;
+      const s = scoreMove(r,c,color);
+      if(s > bestScore) { bestScore=s; best=[r,c]; }
+    }
+  }
+  return best; // null이면 패스
+}
+
+// ── AI Move (heuristic + Claude comment) ──────────────────
 async function doAIMove(){
   if(turn!==aiColor||aiThinking) return;
   aiThinking=true;
@@ -419,88 +548,67 @@ async function doAIMove(){
   setAIComment('<span class="thinking-dots"><span>●</span><span>●</span><span>●</span></span>');
   setInputEnabled(false);
 
-  const aiColorName=aiColor===BLACK?'흑(Black)':'백(White)';
-  const playerColorName=playerColor===BLACK?'흑(Black)':'백(White)';
-  const recentMoves=history.slice(-8).map(h=>{
-    if(h.r===undefined) return `${h.color===BLACK?'흑':'백'}:패스`;
-    const col=String.fromCharCode(65+(h.c>=8?h.c+1:h.c));
-    return `${h.color===BLACK?'흑':'백'}:${col}${BOARD_SIZE-h.r}`;
-  }).join(' ');
+  // 1. 휴리스틱으로 수 결정 (즉시, 확실하게)
+  const chosen = pickBestMove(aiColor);
 
-  const boardStr=board.map(row=>row.join(' ')).join('\n');
+  // 2. 짧은 딜레이 (생각하는 느낌)
+  await new Promise(res=>setTimeout(res, 500+Math.random()*600));
 
-  const prompt=`당신은 바둑 AI입니다. ${BOARD_SIZE}×${BOARD_SIZE} 바둑판에서 최선의 수를 두세요.
-
-당신: ${aiColorName} | 상대: ${playerColorName} | ${moveNum}수째
-최근수: ${recentMoves||'없음'}
-흑따냄:${captureBlack} 백따냄:${captureWhite}
-
-바둑판(0=빈칸,1=흑,2=백):
-${boardStr}
-
-규칙: 빈칸(0)에만 착수, 자살수 금지, 코 금지.
-전략: 활로 많은 곳, 상대 따내기, 집 만들기 우선.
-
-응답 형식(이것만 출력):
-MOVE: [행0-${BOARD_SIZE-1}] [열0-${BOARD_SIZE-1}]
-COMMENT: [한국어 15자 이내 코멘트]
-
-패스시: MOVE: PASS`;
-
-  try {
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:120,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data=await res.json();
-    const text=data.content?.find(b=>b.type==='text')?.text||'';
-    parseAndApplyAIMove(text);
-  } catch(e){
-    console.error(e);
-    setAIComment('연결 오류 — 랜덤 착수');
-    doRandomMove();
+  // 3. 착수
+  let placed = false;
+  if(chosen) {
+    placed = placeStone(chosen[0], chosen[1]);
+  }
+  if(!placed) {
+    passTurnAI();
   }
 
   aiThinking=false;
   canvas.classList.remove('ai-thinking');
   setInputEnabled(true);
+
+  // 4. 비동기로 Claude에게 코멘트만 요청
+  if(placed) fetchAIComment(chosen[0], chosen[1]);
 }
 
-function parseAndApplyAIMove(text){
-  const moveMatch=text.match(/MOVE:\s*(\S+)(?:\s+(\d+))?/i);
-  const commentMatch=text.match(/COMMENT:\s*(.+)/i);
-  const comment=commentMatch?commentMatch[1].trim():'';
+async function fetchAIComment(r, c) {
+  const col = String.fromCharCode(65+(c>=8?c+1:c));
+  const row = BOARD_SIZE-r;
+  const cap = history.length ? history[history.length-1].captured : 0;
 
-  if(moveMatch&&moveMatch[1].toUpperCase()==='PASS'){
-    setAIComment(comment||'AI가 패스했습니다.');
-    passTurnAI(); return;
+  // 간단한 상황 설명만 전달 (보드 전체 X)
+  const atariGroups = myGroupsInAtari(playerColor);
+  const situation = cap > 0
+    ? `방금 상대 돌 ${cap}개를 따냈다`
+    : atariGroups.length > 0
+    ? `상대 돌이 아타리(위기) 상태`
+    : moveNum < 15
+    ? '포석 단계'
+    : '중반 전투 중';
+
+  const prompt = `너는 바둑 초보 친구야. 방금 ${col}${row}에 뒀어. 상황: ${situation}. 
+한국어로 친근하게 한 문장(15자 이내)으로 혼잣말처럼 코멘트해줘. 
+예시: "여기가 좋아 보여!", "이렇게 하면 연결되지!", "흠, 여기 어떨까?"
+코멘트만 출력, 다른 말 없이.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:60,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.find(b=>b.type==='text')?.text?.trim()||'';
+    if(text) setAIComment(text);
+  } catch(e) {
+    // 코멘트 실패해도 게임은 이미 진행됨, 기본 코멘트 표시
+    const fallbacks=['흠, 여기가 좋겠는데!','이 수 어때?','조심해야겠어~','여기가 맞는 것 같아!'];
+    setAIComment(fallbacks[Math.floor(Math.random()*fallbacks.length)]);
   }
-
-  if(moveMatch&&moveMatch[2]!==undefined){
-    const r=parseInt(moveMatch[1]),c=parseInt(moveMatch[2]);
-    if(r>=0&&r<BOARD_SIZE&&c>=0&&c<BOARD_SIZE){
-      const ok=placeStone(r,c);
-      if(ok){setAIComment(comment||'');return;}
-    }
-  }
-
-  // fallback: scan all number pairs in text
-  const nums=[...text.matchAll(/\d+/g)].map(m=>parseInt(m[0]));
-  for(let i=0;i<nums.length-1;i++){
-    const r=nums[i],c=nums[i+1];
-    if(r>=0&&r<BOARD_SIZE&&c>=0&&c<BOARD_SIZE&&board[r][c]===EMPTY){
-      const ok=placeStone(r,c);
-      if(ok){setAIComment(comment||'');return;}
-    }
-  }
-
-  setAIComment('랜덤으로 착수합니다.');
-  doRandomMove();
 }
 
 // AI-internal pass (doesn't re-trigger AI)
@@ -512,19 +620,6 @@ function passTurnAI(){
   moveNum++;turn=turn===BLACK?WHITE:BLACK;
   updateUI();draw();
   if(consecutivePasses>=2) endGame();
-}
-
-function doRandomMove(){
-  const empties=[];
-  for(let r=0;r<BOARD_SIZE;r++) for(let c=0;c<BOARD_SIZE;c++) if(board[r][c]===EMPTY) empties.push([r,c]);
-  for(let i=empties.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[empties[i],empties[j]]=[empties[j],empties[i]];}
-  for(const [r,c] of empties){
-    const nb=cloneBoard(board); nb[r][c]=aiColor;
-    const opp=aiColor===BLACK?WHITE:BLACK;
-    getNeighbors(r,c).forEach(([nr,nc])=>{if(nb[nr][nc]===opp)removeDeadGroup(nr,nc,nb);});
-    if(getLiberties(getGroup(r,c,aiColor,nb),nb)>0){placeStone(r,c);return;}
-  }
-  passTurnAI();
 }
 
 // ── UI ─────────────────────────────────────────────────────
